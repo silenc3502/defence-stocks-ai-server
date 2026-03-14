@@ -1,13 +1,20 @@
+import os
+import urllib.parse
+
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 from app.infrastructure.config.settings import settings
 
+load_dotenv()
+
+password = urllib.parse.quote_plus(os.getenv("MYSQL_PASSWORD"))
+
 DATABASE_URL = (
-    f"mysql+pymysql://{settings.mysql_user}:{settings.mysql_password}"
+    f"mysql+pymysql://{settings.mysql_user}:{password}"
     f"@{settings.mysql_host}:{settings.mysql_port}/{settings.mysql_schema}"
 )
-
 engine = create_engine(DATABASE_URL, echo=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
