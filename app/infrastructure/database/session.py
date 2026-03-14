@@ -14,6 +14,7 @@ password = urllib.parse.quote_plus(os.getenv("MYSQL_PASSWORD"))
 DATABASE_URL = (
     f"mysql+pymysql://{settings.mysql_user}:{password}"
     f"@{settings.mysql_host}:{settings.mysql_port}/{settings.mysql_schema}"
+    f"?charset=utf8mb4"
 )
 engine = create_engine(DATABASE_URL, echo=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
