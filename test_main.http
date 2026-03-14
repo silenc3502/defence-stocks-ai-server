@@ -1,11 +1,17 @@
 # Test your FastAPI endpoints
 
-GET http://127.0.0.1:8000/
+GET http://127.0.0.1:33333/
 Accept: application/json
 
 ###
 
-GET http://127.0.0.1:8000/hello/User
-Accept: application/json
+### 게시물 작성
+POST http://127.0.0.1:33333/posts
+Content-Type: application/json
+
+{
+  "title": "첫 번째 게시물",
+  "content": "게시물 내용입니다."
+}
 
 ###
