@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     redis_password: str
     session_expire_minutes: int = 1440
 
+    cors_allowed_frontend_url: str
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

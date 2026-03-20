@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.domains.account.adapter.inbound.api.account_router import router as account_router
 from app.domains.auth.adapter.inbound.api.auth_router import router as auth_router
@@ -12,6 +13,15 @@ from app.infrastructure.database.session import Base, engine
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[settings.cors_allowed_frontend_url],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(post_router)
 app.include_router(account_router)
 app.include_router(auth_router)
