@@ -37,5 +37,6 @@ def get_list_board_usecase(
 
 def get_read_board_usecase(
     board_repository: BoardRepository = Depends(get_board_repository),
+    account_repository: AccountRepository = Depends(get_account_repository),
 ) -> ReadBoardUseCase:
-    return ReadBoardUseCase(board_repository)
+    return ReadBoardUseCase(board_repository, account_repository)

@@ -4,6 +4,7 @@ from app.domains.auth.adapter.outbound.in_memory.session_repository import Sessi
 from app.domains.board.application.request.create_board_request import CreateBoardRequest
 from app.domains.board.application.response.board_list_response import BoardListResponse
 from app.domains.board.application.response.create_board_response import CreateBoardResponse
+from app.domains.board.application.response.read_board_response import ReadBoardResponse
 from app.domains.board.application.usecase.create_board_usecase import CreateBoardUseCase
 from app.domains.board.application.usecase.list_board_usecase import ListBoardUseCase
 from app.domains.board.application.usecase.read_board_usecase import ReadBoardUseCase
@@ -50,7 +51,7 @@ def list_boards(
     return usecase.execute(page, size)
 
 
-@router.get("/{board_id}", response_model=CreateBoardResponse)
+@router.get("/read/{board_id}", response_model=ReadBoardResponse)
 def read_board(
     board_id: int,
     user_token: str = Cookie(None),
