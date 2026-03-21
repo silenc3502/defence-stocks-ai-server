@@ -12,9 +12,9 @@ from app.domains.auth.adapter.outbound.in_memory.session_repository_impl import 
 from app.domains.auth.adapter.outbound.in_memory.temp_token_repository import TempTokenRepository
 from app.domains.auth.adapter.outbound.in_memory.temp_token_repository_impl import TempTokenRepositoryImpl
 from app.domains.auth.application.usecase.kakao_login_usecase import KakaoLoginUseCase
+from app.domains.auth.application.usecase.get_temp_user_info_usecase import GetTempUserInfoUseCase
 from app.domains.auth.application.usecase.request_kakao_access_token_usecase import RequestKakaoAccessTokenUseCase
 from app.domains.auth.application.usecase.request_kakao_oauth_link_usecase import RequestKakaoOauthLinkUseCase
-from app.domains.auth.application.usecase.sign_up_with_temp_token_usecase import SignUpWithTempTokenUseCase
 from app.infrastructure.cache.redis_client import get_redis
 from app.infrastructure.security.jwt_provider import JwtProvider
 
@@ -66,14 +66,7 @@ def get_request_kakao_access_token_usecase(
     )
 
 
-def get_sign_up_with_temp_token_usecase(
+def get_get_temp_user_info_usecase(
     temp_token_repository: TempTokenRepository = Depends(get_temp_token_repository),
-    account_repository: AccountRepository = Depends(get_account_repository),
-    kakao_auth_port: KakaoAuthPort = Depends(get_kakao_auth_port),
-    session_repository: SessionRepository = Depends(get_session_repository),
-    kakao_token_repository: KakaoTokenRepository = Depends(get_kakao_token_repository),
-) -> SignUpWithTempTokenUseCase:
-    return SignUpWithTempTokenUseCase(
-        temp_token_repository, account_repository, kakao_auth_port,
-        session_repository, kakao_token_repository,
-    )
+) -> GetTempUserInfoUseCase:
+    return GetTempUserInfoUseCase(temp_token_repository)

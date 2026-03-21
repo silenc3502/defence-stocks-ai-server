@@ -4,11 +4,11 @@ from typing import Optional
 
 class TempTokenRepository(ABC):
     @abstractmethod
-    def save(self, token: str, kakao_access_token: str) -> None:
+    def save(self, token: str, data: dict) -> None:
         pass
 
     @abstractmethod
-    def find_by_token(self, token: str) -> Optional[str]:
+    def find_by_token(self, token: str) -> Optional[dict]:
         pass
 
     @abstractmethod

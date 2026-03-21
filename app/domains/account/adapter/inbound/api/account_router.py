@@ -1,15 +1,17 @@
-from fastapi import APIRouter, Cookie, Depends, HTTPException
-from starlette.responses import JSONResponse
+from urllib.parse import urlencode
 
-from app.domains.auth.application.request.sign_up_request import SignUpRequest
-from app.domains.auth.application.response.sign_up_response import SignUpResponse
-from app.domains.auth.application.usecase.sign_up_with_temp_token_usecase import SignUpWithTempTokenUseCase
-from app.domains.auth.dependency import get_sign_up_with_temp_token_usecase
+from fastapi import APIRouter, Cookie, Depends, HTTPException
+from starlette.responses import RedirectResponse
+
+from app.domains.account.application.request.sign_up_request import SignUpRequest
+from app.domains.account.application.usecase.sign_up_with_temp_token_usecase import SignUpWithTempTokenUseCase
+from app.domains.account.dependency import get_sign_up_with_temp_token_usecase
+from app.infrastructure.config.settings import settings
 
 router = APIRouter(prefix="/account", tags=["Account"])
 
 
-@router.post("/sign-up", response_model=SignUpResponse)
+@router.post("/sign-up")
 def sign_up(
     request: SignUpRequest,
     temp_token: str = Cookie(None),
@@ -23,7 +25,12 @@ def sign_up(
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))
 
-    response = JSONResponse(content=result.model_dump())
+    query_params = urlencode({
+        "nickname": result.nickname,
+        "email": result.email,
+    })
+    redirect_url = f"{settings.cors_allowed_frontend_url}?{query_params}"
+    response = RedirectResponse(url=redirect_url)
     response.set_cookie(
         key="user_token",
         value=user_token,

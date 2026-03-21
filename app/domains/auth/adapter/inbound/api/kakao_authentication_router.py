@@ -1,7 +1,7 @@
 from urllib.parse import urlencode
 
 from fastapi import APIRouter, Depends, HTTPException
-from starlette.responses import JSONResponse, RedirectResponse
+from starlette.responses import RedirectResponse
 
 from app.domains.auth.application.response.kakao_access_token_response import KakaoAccessTokenResponse
 from app.domains.auth.application.usecase.request_kakao_access_token_usecase import RequestKakaoAccessTokenUseCase
@@ -32,6 +32,7 @@ def request_access_token_after_redirection(
     frontend_url = settings.cors_allowed_frontend_url
 
     if result.is_registered:
+        print(f"exist user")
         query_params = urlencode({
             "nickname": result.nickname,
             "email": result.email,
@@ -46,11 +47,8 @@ def request_access_token_after_redirection(
             samesite="lax",
         )
     else:
-        query_params = urlencode({
-            "nickname": result.nickname,
-            "email": result.email,
-        })
-        redirect_url = f"{frontend_url}?{query_params}"
+        print(f"new user")
+        redirect_url = f"{frontend_url}/auth-callback"
         response = RedirectResponse(url=redirect_url)
         response.set_cookie(
             key="temp_token",

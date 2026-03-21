@@ -44,7 +44,12 @@ class RequestKakaoAccessTokenUseCase:
             logger.info("기존 회원 로그인 - account_id: %d, user_token: %s...", registration.account_id, user_token[:8])
         else:
             temp_token = str(uuid.uuid4())
-            self.temp_token_repository.save(temp_token, token_info.access_token)
+            self.temp_token_repository.save(temp_token, {
+                "kakao_access_token": token_info.access_token,
+                "kakao_id": user_info.kakao_id,
+                "nickname": user_info.name,
+                "email": user_info.email,
+            })
             logger.info("임시 토큰 발급 - token: %s...", temp_token[:8])
 
         return KakaoAccessTokenResponse(

@@ -1,3 +1,4 @@
+import json
 from typing import Optional
 
 import redis
@@ -14,11 +15,14 @@ class TempTokenRepositoryImpl(TempTokenRepository):
     def _key(self, token: str) -> str:
         return f"temp_token:{token}"
 
-    def save(self, token: str, kakao_access_token: str) -> None:
-        self.redis_client.setex(self._key(token), TEMP_TOKEN_TTL_SECONDS, kakao_access_token)
+    def save(self, token: str, data: dict) -> None:
+        self.redis_client.setex(self._key(token), TEMP_TOKEN_TTL_SECONDS, json.dumps(data))
 
-    def find_by_token(self, token: str) -> Optional[str]:
-        return self.redis_client.get(self._key(token))
+    def find_by_token(self, token: str) -> Optional[dict]:
+        value = self.redis_client.get(self._key(token))
+        if value is None:
+            return None
+        return json.loads(value)
 
     def delete(self, token: str) -> None:
         self.redis_client.delete(self._key(token))
