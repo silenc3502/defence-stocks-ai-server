@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy.orm import Session
 
 from app.domains.board.adapter.outbound.persistence.board_repository import BoardRepository
@@ -15,6 +17,12 @@ class BoardRepositoryImpl(BoardRepository):
         self.db.add(orm)
         self.db.commit()
         self.db.refresh(orm)
+        return BoardMapper.to_entity(orm)
+
+    def find_by_id(self, board_id: int) -> Optional[Board]:
+        orm = self.db.query(BoardORM).filter(BoardORM.id == board_id).first()
+        if orm is None:
+            return None
         return BoardMapper.to_entity(orm)
 
     def find_all_with_pagination(self, page: int, size: int) -> tuple[list[Board], int]:

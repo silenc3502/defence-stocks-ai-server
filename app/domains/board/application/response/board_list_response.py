@@ -8,7 +8,7 @@ class BoardItem(BaseModel):
     board_id: Optional[int]
     title: str
     content: str
-    account_id: int
+    nickname: str
     created_at: datetime
     updated_at: datetime
 
