@@ -18,5 +18,9 @@ class BoardRepository(ABC):
         pass
 
     @abstractmethod
+    def delete(self, board_id: int) -> None:
+        pass
+
+    @abstractmethod
     def find_all_with_pagination(self, page: int, size: int) -> tuple[list[Board], int]:
         pass

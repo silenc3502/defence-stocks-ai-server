@@ -28,6 +28,10 @@ class BoardRepositoryImpl(BoardRepository):
         self.db.refresh(orm)
         return BoardMapper.to_entity(orm)
 
+    def delete(self, board_id: int) -> None:
+        self.db.query(BoardORM).filter(BoardORM.id == board_id).delete()
+        self.db.commit()
+
     def find_by_id(self, board_id: int) -> Optional[Board]:
         orm = self.db.query(BoardORM).filter(BoardORM.id == board_id).first()
         if orm is None:

@@ -8,6 +8,7 @@ from app.domains.auth.adapter.outbound.in_memory.session_repository_impl import 
 from app.domains.board.adapter.outbound.persistence.board_repository import BoardRepository
 from app.domains.board.adapter.outbound.persistence.board_repository_impl import BoardRepositoryImpl
 from app.domains.board.application.usecase.create_board_usecase import CreateBoardUseCase
+from app.domains.board.application.usecase.delete_board_usecase import DeleteBoardUseCase
 from app.domains.board.application.usecase.edit_board_usecase import EditBoardUseCase
 from app.domains.board.application.usecase.list_board_usecase import ListBoardUseCase
 from app.domains.board.application.usecase.read_board_usecase import ReadBoardUseCase
@@ -48,3 +49,9 @@ def get_edit_board_usecase(
     account_repository: AccountRepository = Depends(get_account_repository),
 ) -> EditBoardUseCase:
     return EditBoardUseCase(board_repository, account_repository)
+
+
+def get_delete_board_usecase(
+    board_repository: BoardRepository = Depends(get_board_repository),
+) -> DeleteBoardUseCase:
+    return DeleteBoardUseCase(board_repository)
