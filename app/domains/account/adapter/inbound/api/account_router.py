@@ -1,6 +1,6 @@
 from urllib.parse import urlencode
 
-from fastapi import APIRouter, Cookie, Depends, HTTPException
+from fastapi import APIRouter, Cookie, Depends, Form, HTTPException
 from starlette.responses import RedirectResponse
 
 from app.domains.account.application.request.sign_up_request import SignUpRequest
@@ -13,12 +13,15 @@ router = APIRouter(prefix="/account", tags=["Account"])
 
 @router.post("/sign-up")
 def sign_up(
-    request: SignUpRequest,
+    nickname: str = Form(...),
+    email: str = Form(...),
     temp_token: str = Cookie(None),
     usecase: SignUpWithTempTokenUseCase = Depends(get_sign_up_with_temp_token_usecase),
 ):
     if not temp_token:
         raise HTTPException(status_code=400, detail="임시 토큰이 누락되었습니다.")
+
+    request = SignUpRequest(nickname=nickname, email=email)
 
     try:
         result, user_token = usecase.execute(temp_token, request)
