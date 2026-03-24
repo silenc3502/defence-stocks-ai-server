@@ -6,7 +6,7 @@ from app.domains.youtube.application.response.youtube_list_response import (
     YoutubeVideoResponse,
 )
 
-SEARCH_QUERY = "한국 주식"
+SEARCH_QUERY = "한국 방산주 방위산업 주식"
 MAX_RESULTS = 9
 
 
