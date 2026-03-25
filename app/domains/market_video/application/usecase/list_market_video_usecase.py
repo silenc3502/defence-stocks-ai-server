@@ -49,7 +49,7 @@ class ListMarketVideoUseCase:
         for video in filtered_videos:
             video.view_count = stats.get(video.video_id, 0)
 
-        filtered_videos.sort(key=lambda v: v.published_at, reverse=True)
+        filtered_videos.sort(key=lambda v: (v.published_at, v.view_count or 0), reverse=True)
         top_videos = filtered_videos[:MAX_VIDEOS]
 
         items = [
