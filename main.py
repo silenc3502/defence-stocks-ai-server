@@ -8,6 +8,7 @@ from app.domains.auth.adapter.inbound.api.kakao_authentication_router import rou
 from app.domains.account.infrastructure.orm.account_orm import AccountORM  # noqa: F401
 from app.domains.board.adapter.inbound.api.board_router import router as board_router
 from app.domains.board.infrastructure.orm.board_orm import BoardORM  # noqa: F401
+from app.domains.market_video.adapter.inbound.api.market_video_router import router as market_video_router
 from app.domains.post.adapter.inbound.api.post_router import router as post_router
 from app.domains.youtube.adapter.inbound.api.youtube_router import router as youtube_router
 from app.domains.post.infrastructure.orm.post_orm import PostORM  # noqa: F401
@@ -33,6 +34,7 @@ app.include_router(auth_router)
 app.include_router(authentication_router)
 app.include_router(kakao_authentication_router)
 app.include_router(youtube_router)
+app.include_router(market_video_router)
 
 
 @app.get("/")

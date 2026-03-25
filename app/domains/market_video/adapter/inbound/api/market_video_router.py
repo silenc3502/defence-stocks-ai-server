@@ -1,0 +1,30 @@
+from fastapi import APIRouter, Cookie, Depends, HTTPException
+
+from app.domains.auth.adapter.outbound.in_memory.session_repository import SessionRepository
+from app.domains.market_video.application.response.market_video_list_response import MarketVideoListResponse
+from app.domains.market_video.application.usecase.list_market_video_usecase import ListMarketVideoUseCase
+from app.domains.market_video.dependency import get_list_market_video_usecase, get_session_repository
+
+router = APIRouter(prefix="/market-video", tags=["Market Video"])
+
+
+@router.get("/list", response_model=MarketVideoListResponse)
+def list_market_videos(
+    user_token: str = Cookie(None),
+    usecase: ListMarketVideoUseCase = Depends(get_list_market_video_usecase),
+    session_repository: SessionRepository = Depends(get_session_repository),
+):
+    print(f"[market-video] user_token: {user_token}")
+
+    if not user_token:
+        print("[market-video] user_token이 None입니다")
+        raise HTTPException(status_code=401, detail="인증이 필요합니다.")
+
+    print(f"[market-video] Redis 조회 키: session:{user_token}")
+    account_id = session_repository.find_by_token(user_token)
+    print(f"[market-video] Redis 조회 결과 account_id: {account_id}")
+
+    if account_id is None:
+        raise HTTPException(status_code=401, detail="세션이 만료되었거나 유효하지 않습니다.")
+
+    return usecase.execute()
