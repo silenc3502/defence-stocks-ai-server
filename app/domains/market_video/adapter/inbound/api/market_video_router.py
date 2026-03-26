@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Cookie, Depends, HTTPException
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Query
 
 from app.domains.auth.adapter.outbound.in_memory.session_repository import SessionRepository
 from app.domains.market_video.application.response.market_video_list_response import MarketVideoListResponse
@@ -52,6 +52,7 @@ def collect_video_comments(
 
 @router.get("/nouns/extract", response_model=NounExtractionResponse)
 def extract_nouns_from_comments(
+    top_n: int = Query(30, ge=1, le=200),
     user_token: str = Cookie(None),
     usecase: ExtractNounsUseCase = Depends(get_extract_nouns_usecase),
     session_repository: SessionRepository = Depends(get_session_repository),
@@ -63,4 +64,4 @@ def extract_nouns_from_comments(
     if account_id is None:
         raise HTTPException(status_code=401, detail="세션이 만료되었거나 유효하지 않습니다.")
 
-    return usecase.execute()
+    return usecase.execute(top_n)

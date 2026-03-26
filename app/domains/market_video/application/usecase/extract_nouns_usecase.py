@@ -17,7 +17,7 @@ class ExtractNounsUseCase:
         self.market_video_repository = market_video_repository
         self.video_comment_repository = video_comment_repository
 
-    def execute(self) -> NounExtractionResponse:
+    def execute(self, top_n: int = 30) -> NounExtractionResponse:
         saved_videos = self.market_video_repository.find_all_ordered_by_published_at(MAX_VIDEOS)
 
         all_texts = []
@@ -29,14 +29,15 @@ class ExtractNounsUseCase:
             return NounExtractionResponse(nouns=[], total_nouns=0, total_comments=0)
 
         noun_counts = extract_nouns(all_texts)
+        top_nouns = noun_counts[:top_n]
 
         nouns = [
             NounFrequency(noun=noun, count=count)
-            for noun, count in noun_counts
+            for noun, count in top_nouns
         ]
 
         return NounExtractionResponse(
             nouns=nouns,
-            total_nouns=len(nouns),
+            total_nouns=len(noun_counts),
             total_comments=len(all_texts),
         )
