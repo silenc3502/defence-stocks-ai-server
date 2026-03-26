@@ -10,6 +10,7 @@ from app.domains.market_video.adapter.outbound.persistence.market_video_reposito
 from app.domains.market_video.adapter.outbound.persistence.video_comment_repository import VideoCommentRepository
 from app.domains.market_video.adapter.outbound.persistence.video_comment_repository_impl import VideoCommentRepositoryImpl
 from app.domains.market_video.application.usecase.collect_video_comments_usecase import CollectVideoCommentsUseCase
+from app.domains.market_video.application.usecase.extract_nouns_usecase import ExtractNounsUseCase
 from app.domains.market_video.application.usecase.list_market_video_usecase import ListMarketVideoUseCase
 from app.infrastructure.cache.redis_client import get_redis
 from app.infrastructure.database.session import get_db
@@ -44,3 +45,10 @@ def get_collect_video_comments_usecase(
     video_comment_repository: VideoCommentRepository = Depends(get_video_comment_repository),
 ) -> CollectVideoCommentsUseCase:
     return CollectVideoCommentsUseCase(market_video_port, market_video_repository, video_comment_repository)
+
+
+def get_extract_nouns_usecase(
+    market_video_repository: MarketVideoRepository = Depends(get_market_video_repository),
+    video_comment_repository: VideoCommentRepository = Depends(get_video_comment_repository),
+) -> ExtractNounsUseCase:
+    return ExtractNounsUseCase(market_video_repository, video_comment_repository)
