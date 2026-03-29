@@ -11,6 +11,8 @@ from app.domains.stock_theme.application.usecase.list_defence_stocks_usecase imp
 from app.domains.stock_theme.application.usecase.recommend_stocks_usecase import RecommendStocksUseCase
 from app.infrastructure.cache.redis_client import get_redis
 from app.infrastructure.database.session import get_db
+from app.infrastructure.llm.llm_port import LLMPort
+from app.infrastructure.llm.openai_client import OpenAIClient
 
 
 def get_session_repository() -> SessionRepository:
@@ -27,11 +29,17 @@ def get_list_defence_stocks_usecase(
     return ListDefenceStocksUseCase(defence_stock_repository)
 
 
+def get_llm_port() -> LLMPort:
+    return OpenAIClient()
+
+
 def get_recommend_stocks_usecase(
     db: Session = Depends(get_db),
+    llm_port: LLMPort = Depends(get_llm_port),
 ) -> RecommendStocksUseCase:
     return RecommendStocksUseCase(
         market_video_repository=MarketVideoRepositoryImpl(db),
         video_comment_repository=VideoCommentRepositoryImpl(db),
         defence_stock_repository=DefenceStockRepositoryImpl(db),
+        llm_port=llm_port,
     )

@@ -7,6 +7,11 @@ from app.domains.stock_theme.application.response.stock_recommendation_response 
     MatchedStock,
     StockRecommendationResponse,
 )
+from app.domains.stock_theme.domain.service.recommendation_reason import (
+    SYSTEM_MESSAGE,
+    build_reason_prompt,
+)
+from app.infrastructure.llm.llm_port import LLMPort
 
 TOP_KEYWORDS = 50
 
@@ -17,10 +22,12 @@ class RecommendStocksUseCase:
         market_video_repository: MarketVideoRepository,
         video_comment_repository: VideoCommentRepository,
         defence_stock_repository: DefenceStockRepository,
+        llm_port: LLMPort,
     ):
         self.market_video_repository = market_video_repository
         self.video_comment_repository = video_comment_repository
         self.defence_stock_repository = defence_stock_repository
+        self.llm_port = llm_port
 
     def execute(self) -> StockRecommendationResponse:
         saved_videos = self.market_video_repository.find_all_ordered_by_published_at(MAX_VIDEOS)
@@ -47,6 +54,12 @@ class RecommendStocksUseCase:
 
             matched = keyword_set & matchable
             if matched:
+                prompt = build_reason_prompt(stock.name, stock.code, stock.themes, sorted(matched))
+                try:
+                    reason = self.llm_port.generate(prompt, SYSTEM_MESSAGE)
+                except Exception:
+                    reason = f"{stock.name}은(는) {', '.join(sorted(matched))} 키워드와 관련이 있어 추천되었습니다."
+
                 matched_stocks.append(
                     MatchedStock(
                         name=stock.name,
@@ -54,6 +67,7 @@ class RecommendStocksUseCase:
                         themes=stock.themes,
                         matched_keywords=sorted(matched),
                         relevance_score=len(matched),
+                        reason=reason,
                     )
                 )
 

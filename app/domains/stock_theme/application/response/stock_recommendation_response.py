@@ -9,6 +9,7 @@ class MatchedStock(BaseModel):
     themes: List[str]
     matched_keywords: List[str]
     relevance_score: int
+    reason: str = ""
 
 
 class StockRecommendationResponse(BaseModel):
