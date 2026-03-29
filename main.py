@@ -12,12 +12,21 @@ from app.domains.market_video.adapter.inbound.api.market_video_router import rou
 from app.domains.market_video.infrastructure.orm.market_video_orm import MarketVideoORM  # noqa: F401
 from app.domains.market_video.infrastructure.orm.video_comment_orm import VideoCommentORM  # noqa: F401
 from app.domains.post.adapter.inbound.api.post_router import router as post_router
+from app.domains.stock_theme.adapter.inbound.api.stock_theme_router import router as stock_theme_router
+from app.domains.stock_theme.infrastructure.orm.defence_stock_orm import DefenceStockORM, DefenceStockThemeORM  # noqa: F401
+from app.domains.stock_theme.infrastructure.seed import seed_defence_stocks
 from app.domains.youtube.adapter.inbound.api.youtube_router import router as youtube_router
 from app.domains.post.infrastructure.orm.post_orm import PostORM  # noqa: F401
 from app.infrastructure.config.settings import settings
-from app.infrastructure.database.session import Base, engine
+from app.infrastructure.database.session import Base, engine, SessionLocal
 
 Base.metadata.create_all(bind=engine)
+
+db = SessionLocal()
+try:
+    seed_defence_stocks(db)
+finally:
+    db.close()
 
 app = FastAPI()
 
@@ -37,6 +46,7 @@ app.include_router(authentication_router)
 app.include_router(kakao_authentication_router)
 app.include_router(youtube_router)
 app.include_router(market_video_router)
+app.include_router(stock_theme_router)
 
 
 @app.get("/")
