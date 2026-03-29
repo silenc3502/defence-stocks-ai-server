@@ -2,6 +2,8 @@ from collections import Counter
 
 from kiwipiepy import Kiwi
 
+from app.domains.market_video.domain.service.synonym_merger import merge_synonyms
+
 _kiwi = Kiwi()
 
 MIN_NOUN_LENGTH = 2
@@ -27,4 +29,6 @@ def extract_nouns(texts: list[str]) -> list[tuple[str, int]]:
         all_nouns.extend(nouns)
 
     counter = Counter(all_nouns)
-    return counter.most_common()
+    raw_counts = counter.most_common()
+
+    return merge_synonyms(raw_counts)
