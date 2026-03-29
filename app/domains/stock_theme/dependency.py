@@ -33,4 +33,5 @@ def get_recommend_stocks_usecase(
     return RecommendStocksUseCase(
         market_video_repository=MarketVideoRepositoryImpl(db),
         video_comment_repository=VideoCommentRepositoryImpl(db),
+        defence_stock_repository=DefenceStockRepositoryImpl(db),
     )

@@ -11,13 +11,6 @@ class MatchedStock(BaseModel):
     relevance_score: int
 
 
-class MatchedTheme(BaseModel):
-    theme: str
-    matched_keywords: List[str]
-    relevance_score: int
-
-
 class StockRecommendationResponse(BaseModel):
     stocks: List[MatchedStock]
-    themes: List[MatchedTheme]
     input_keywords_count: int
