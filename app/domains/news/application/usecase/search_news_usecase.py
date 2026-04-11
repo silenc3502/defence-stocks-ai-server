@@ -1,7 +1,7 @@
-from app.domains.news_search.adapter.outbound.external.news_search_port import (
+from app.domains.news.adapter.outbound.external.news_search_port import (
     NewsSearchPort,
 )
-from app.domains.news_search.application.response.news_search_response import (
+from app.domains.news.application.response.news_search_response import (
     NewsSearchResponse,
 )
 

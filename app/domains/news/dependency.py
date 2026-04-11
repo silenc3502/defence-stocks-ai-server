@@ -4,13 +4,13 @@ from app.domains.auth.adapter.outbound.in_memory.session_repository import Sessi
 from app.domains.auth.adapter.outbound.in_memory.session_repository_impl import (
     SessionRepositoryImpl,
 )
-from app.domains.news_search.adapter.outbound.external.news_search_port import (
+from app.domains.news.adapter.outbound.external.news_search_port import (
     NewsSearchPort,
 )
-from app.domains.news_search.adapter.outbound.external.serp_news_search_client import (
+from app.domains.news.adapter.outbound.external.serp_news_search_client import (
     SerpNewsSearchClient,
 )
-from app.domains.news_search.application.usecase.search_news_usecase import (
+from app.domains.news.application.usecase.search_news_usecase import (
     SearchNewsUseCase,
 )
 from app.infrastructure.cache.redis_client import get_redis

@@ -10,7 +10,7 @@ from app.domains.board.adapter.inbound.api.board_router import router as board_r
 from app.domains.board.infrastructure.orm.board_orm import BoardORM  # noqa: F401
 from app.domains.market_analysis.adapter.inbound.api.market_analysis_router import router as market_analysis_router
 from app.domains.market_video.adapter.inbound.api.market_video_router import router as market_video_router
-from app.domains.news_search.adapter.inbound.api.news_search_router import router as news_search_router
+from app.domains.news.adapter.inbound.api.news_search_router import router as news_search_router
 from app.domains.market_video.infrastructure.orm.market_video_orm import MarketVideoORM  # noqa: F401
 from app.domains.market_video.infrastructure.orm.video_comment_orm import VideoCommentORM  # noqa: F401
 from app.domains.post.adapter.inbound.api.post_router import router as post_router

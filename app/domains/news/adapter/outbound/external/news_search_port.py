@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Tuple
 
-from app.domains.news_search.application.response.news_search_response import NewsItem
+from app.domains.news.application.response.news_search_response import NewsItem
 
 
 class NewsSearchPort(ABC):

@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Query
 
 from app.domains.auth.adapter.outbound.in_memory.session_repository import SessionRepository
-from app.domains.news_search.application.response.news_search_response import (
+from app.domains.news.application.response.news_search_response import (
     NewsSearchResponse,
 )
-from app.domains.news_search.application.usecase.search_news_usecase import (
+from app.domains.news.application.usecase.search_news_usecase import (
     SearchNewsUseCase,
 )
-from app.domains.news_search.dependency import (
+from app.domains.news.dependency import (
     get_search_news_usecase,
     get_session_repository,
 )

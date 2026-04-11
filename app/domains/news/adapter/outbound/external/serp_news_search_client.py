@@ -3,10 +3,10 @@ from datetime import datetime
 from email.utils import parsedate_to_datetime
 from typing import Any, List, Optional, Tuple
 
-from app.domains.news_search.adapter.outbound.external.news_search_port import (
+from app.domains.news.adapter.outbound.external.news_search_port import (
     NewsSearchPort,
 )
-from app.domains.news_search.application.response.news_search_response import NewsItem
+from app.domains.news.application.response.news_search_response import NewsItem
 from app.infrastructure.external.serp.serp_api_client import SerpAPIClient
 
 logger = logging.getLogger(__name__)
