@@ -10,7 +10,10 @@ from app.domains.board.adapter.inbound.api.board_router import router as board_r
 from app.domains.board.infrastructure.orm.board_orm import BoardORM  # noqa: F401
 from app.domains.market_analysis.adapter.inbound.api.market_analysis_router import router as market_analysis_router
 from app.domains.market_video.adapter.inbound.api.market_video_router import router as market_video_router
+from app.domains.news.adapter.inbound.api.interest_article_router import router as interest_article_router
 from app.domains.news.adapter.inbound.api.news_search_router import router as news_search_router
+from app.domains.news.infrastructure.orm.interest_article_content_orm import InterestArticleContentORM  # noqa: F401
+from app.domains.news.infrastructure.orm.interest_article_orm import InterestArticleORM  # noqa: F401
 from app.domains.market_video.infrastructure.orm.market_video_orm import MarketVideoORM  # noqa: F401
 from app.domains.market_video.infrastructure.orm.video_comment_orm import VideoCommentORM  # noqa: F401
 from app.domains.post.adapter.inbound.api.post_router import router as post_router
@@ -21,11 +24,16 @@ from app.domains.youtube.adapter.inbound.api.youtube_router import router as you
 from app.domains.post.infrastructure.orm.post_orm import PostORM  # noqa: F401
 from app.infrastructure.config.settings import settings
 from app.infrastructure.database.session import Base, engine, SessionLocal
-from app.infrastructure.database.postgres_session import check_postgres_connection
+from app.infrastructure.database.postgres_session import (
+    PostgresBase,
+    check_postgres_connection,
+    postgres_engine,
+)
 
 Base.metadata.create_all(bind=engine)
 
 check_postgres_connection()
+PostgresBase.metadata.create_all(bind=postgres_engine)
 
 db = SessionLocal()
 try:
@@ -54,6 +62,7 @@ app.include_router(market_video_router)
 app.include_router(stock_theme_router)
 app.include_router(market_analysis_router)
 app.include_router(news_search_router)
+app.include_router(interest_article_router)
 
 
 @app.get("/")

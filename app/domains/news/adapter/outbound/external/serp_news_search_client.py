@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-from email.utils import parsedate_to_datetime
 from typing import Any, List, Optional, Tuple
 
 from app.domains.news.adapter.outbound.external.news_search_port import (
@@ -68,10 +67,9 @@ class SerpNewsSearchClient(NewsSearchPort):
     def _to_news_item(self, entry: dict) -> NewsItem:
         return NewsItem(
             title=entry.get("title") or "",
-            summary=entry.get("snippet") or entry.get("description"),
             source=self._extract_source(entry.get("source")),
             link=entry.get("link") or "",
-            published_at=self._parse_published_at(entry.get("date")),
+            published_at=self._parse_published_at(entry),
         )
 
     @staticmethod
@@ -85,11 +83,13 @@ class SerpNewsSearchClient(NewsSearchPort):
         return None
 
     @staticmethod
-    def _parse_published_at(value: Any) -> Optional[datetime]:
-        if not value or not isinstance(value, str):
-            return None
-        try:
-            return parsedate_to_datetime(value)
-        except (TypeError, ValueError):
-            logger.debug("뉴스 게시 시간 파싱 실패: %s", value)
-            return None
+    def _parse_published_at(entry: dict) -> Optional[datetime]:
+        """`iso_date` (ISO 8601) 를 우선 사용하고, 없으면 파싱하지 않는다."""
+        iso_date = entry.get("iso_date")
+        if isinstance(iso_date, str) and iso_date:
+            try:
+                # "2026-04-06T02:37:00Z" 형태 지원
+                return datetime.fromisoformat(iso_date.replace("Z", "+00:00"))
+            except ValueError:
+                logger.debug("뉴스 iso_date 파싱 실패: %s", iso_date)
+        return None

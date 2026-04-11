@@ -6,7 +6,6 @@ from pydantic import BaseModel
 
 class NewsItem(BaseModel):
     title: str
-    summary: Optional[str] = None
     source: Optional[str] = None
     link: str
     published_at: Optional[datetime] = None
