@@ -8,6 +8,14 @@ class Settings(BaseSettings):
     mysql_port: int
     mysql_schema: str
 
+    postgres_host: str
+    postgres_port: int
+    postgres_user: str
+    postgres_password: str
+    postgres_db: str
+    postgres_pool_size: int = 5
+    postgres_max_overflow: int = 10
+
     kakao_client_id: str
     kakao_redirect_uri: str
 
@@ -26,6 +34,12 @@ class Settings(BaseSettings):
     youtube_api_key: str
 
     openai_api_key: str
+
+    serp_api_key: str
+    serp_api_base_url: str = "https://serpapi.com"
+    serp_api_default_engine: str = "google_news"
+    serp_api_timeout_seconds: float = 10.0
+    serp_api_max_retries: int = 3
 
     model_config = SettingsConfigDict(
         env_file=".env",

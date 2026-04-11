@@ -20,8 +20,11 @@ from app.domains.youtube.adapter.inbound.api.youtube_router import router as you
 from app.domains.post.infrastructure.orm.post_orm import PostORM  # noqa: F401
 from app.infrastructure.config.settings import settings
 from app.infrastructure.database.session import Base, engine, SessionLocal
+from app.infrastructure.database.postgres_session import check_postgres_connection
 
 Base.metadata.create_all(bind=engine)
+
+check_postgres_connection()
 
 db = SessionLocal()
 try:
