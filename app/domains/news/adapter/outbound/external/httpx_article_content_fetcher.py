@@ -1,9 +1,9 @@
 import logging
 from datetime import datetime
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional
 
 import httpx
-from lxml import html as lxml_html
+import trafilatura
 
 from app.domains.news.adapter.outbound.external.article_content_fetcher import (
     ArticleContentFetcher,
@@ -19,10 +19,10 @@ _DEFAULT_USER_AGENT = (
 
 
 class HttpxArticleContentFetcher(ArticleContentFetcher):
-    """httpx 로 원문 HTML 을 가져오고 lxml 로 제목/본문 텍스트를 추출한다.
+    """httpx 로 원문 HTML 을 가져오고 trafilatura 로 본문/제목을 추출한다.
 
-    사이트별 구조가 제각각이므로 `<title>` + 모든 `<p>` 텍스트 를 단순 결합하는
-    naive 추출 방식을 사용한다. 원본 HTML 도 함께 저장하여 추후 재파싱 여지를 남긴다.
+    trafilatura 는 boilerplate(광고/네비/사이드바) 를 제거하고 본문 단락만
+    추출하는 전용 라이브러리다. 사이트별 구조에 강건함.
     """
 
     def __init__(self, timeout_seconds: float = 10.0):
@@ -51,7 +51,7 @@ class HttpxArticleContentFetcher(ArticleContentFetcher):
             raise ArticleFetchError(f"기사 원문 접근 실패: {exc}") from exc
 
         html_text = response.text
-        extracted_title, plain_text = self._extract(html_text)
+        extracted_title, plain_text = self._extract(html_text, link)
 
         return {
             "url": link,
@@ -65,17 +65,28 @@ class HttpxArticleContentFetcher(ArticleContentFetcher):
         }
 
     @staticmethod
-    def _extract(html_text: str) -> Tuple[Optional[str], str]:
+    def _extract(html_text: str, url: str) -> tuple[Optional[str], str]:
         try:
-            doc = lxml_html.fromstring(html_text)
+            extracted = trafilatura.extract(
+                html_text,
+                url=url,
+                favor_precision=True,
+                include_comments=False,
+                include_tables=False,
+                with_metadata=False,
+                output_format="txt",
+            )
+            text = (extracted or "").strip()
         except Exception as exc:
-            logger.debug("HTML 파싱 실패: %s", exc)
-            return None, ""
+            logger.debug("trafilatura 본문 추출 실패: %s", exc)
+            text = ""
 
-        title_els = doc.xpath("//title/text()")
-        title = title_els[0].strip() if title_els else None
-
-        paragraphs = doc.xpath("//p//text()")
-        text = "\n".join(p.strip() for p in paragraphs if p.strip())
+        title: Optional[str] = None
+        try:
+            metadata = trafilatura.extract_metadata(html_text, default_url=url)
+            if metadata is not None and metadata.title:
+                title = metadata.title.strip()
+        except Exception as exc:
+            logger.debug("trafilatura 제목 추출 실패: %s", exc)
 
         return title, text
