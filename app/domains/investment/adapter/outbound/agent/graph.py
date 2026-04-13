@@ -76,6 +76,7 @@ def run_investment_workflow(user_input: str) -> Dict[str, Any]:
     initial_state: InvestmentState = {
         "input": user_input,
         "messages": [],
+        "parsed_query": None,
         "next_agent": None,
         "retrieval_data": None,
         "analysis_result": None,
@@ -83,7 +84,11 @@ def run_investment_workflow(user_input: str) -> Dict[str, Any]:
         "iteration": 0,
     }
 
-    logger.info("[InvestmentWorkflow] 시작 input=%s", user_input[:200])
+    print("\n" + "#" * 60)
+    print(f"[InvestmentWorkflow] 시작")
+    print(f"[InvestmentWorkflow] input: {user_input[:200]}")
+    print("#" * 60)
+
     try:
         result = _get_compiled_graph().invoke(initial_state)
     except AgentInvocationError:
@@ -92,9 +97,11 @@ def run_investment_workflow(user_input: str) -> Dict[str, Any]:
         logger.error("[InvestmentWorkflow] 실행 실패: %s", exc, exc_info=True)
         raise AgentInvocationError(f"투자 판단 워크플로우 실행 실패: {exc}") from exc
 
-    logger.info(
-        "[InvestmentWorkflow] 완료 iter=%s final_output=%s",
-        result.get("iteration"),
-        (result.get("final_output") or "")[:200],
-    )
+    print("\n" + "#" * 60)
+    print(f"[InvestmentWorkflow] 완료")
+    print(f"[InvestmentWorkflow] iterations: {result.get('iteration')}")
+    print(f"[InvestmentWorkflow] parsed_query: {result.get('parsed_query')}")
+    print(f"[InvestmentWorkflow] final_output 길이: {len(result.get('final_output') or '')}자")
+    print("#" * 60)
+
     return result
