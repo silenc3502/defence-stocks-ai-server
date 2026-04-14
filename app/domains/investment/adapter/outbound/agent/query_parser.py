@@ -25,13 +25,20 @@ _SYSTEM_PROMPT = """\
 {
   "company": "종목명 또는 null",
   "intent": "매수_판단 | 리스크_분석 | 전망_조회 | 비교_분석 | 일반_질의",
-  "required_data": ["뉴스", "재무", "시장_데이터", "업종_동향"]
+  "required_data": ["뉴스", "유튜브", "종목"]
 }
 
 규칙:
 - company: 특정 종목이 언급되면 종목명, 없으면(테마·섹터·일반) null
 - intent: 질문 의도에 가장 가까운 것 하나 선택
-- required_data: 답변에 필요한 정보 유형을 배열로 나열 (1개 이상)
+- required_data: 답변에 필요한 정보 유형을 아래 목록에서만 골라 배열로 나열 (1개 이상)
+  * "뉴스" — 최신 뉴스 기사
+  * "유튜브" — 유튜브 영상 및 댓글 여론
+  * "종목" — 방산주 종목 리스트 및 테마 매핑
+
+예시:
+- "한화에어로스페이스 지금 사도 될까?" → {"company":"한화에어로스페이스","intent":"매수_판단","required_data":["뉴스","유튜브","종목"]}
+- "방산주 전반 전망" → {"company":null,"intent":"전망_조회","required_data":["뉴스","유튜브","종목"]}
 """
 
 
@@ -110,12 +117,25 @@ def _validate(data: dict) -> ParsedQuery:
     if not isinstance(intent, str) or not intent.strip():
         intent = "일반_질의"
 
-    required_data = data.get("required_data", [])
-    if not isinstance(required_data, list) or len(required_data) == 0:
-        required_data = ["뉴스"]
+    # required_data 검증 — SOURCE_REGISTRY 에 실제로 존재하는 키만 남김.
+    # 비거나 알 수 없는 키만 있으면 기본값(뉴스+유튜브+종목) 주입.
+    from app.domains.investment.adapter.outbound.data_source.source_registry import (
+        SOURCE_REGISTRY,
+    )
+
+    raw_required = data.get("required_data", [])
+    if not isinstance(raw_required, list):
+        raw_required = []
+
+    required_data = [
+        str(d).strip() for d in raw_required
+        if d and str(d).strip() in SOURCE_REGISTRY
+    ]
+    if not required_data:
+        required_data = ["뉴스", "유튜브", "종목"]
 
     return ParsedQuery(
         company=company,
         intent=intent.strip(),
-        required_data=[str(d).strip() for d in required_data if d],
+        required_data=required_data,
     )

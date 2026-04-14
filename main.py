@@ -8,6 +8,9 @@ from app.domains.auth.adapter.inbound.api.kakao_authentication_router import rou
 from app.domains.account.infrastructure.orm.account_orm import AccountORM  # noqa: F401
 from app.domains.board.adapter.inbound.api.board_router import router as board_router
 from app.domains.investment.adapter.inbound.api.investment_router import router as investment_router
+from app.domains.investment.infrastructure.orm.investment_youtube_log_orm import InvestmentYoutubeLogORM  # noqa: F401
+from app.domains.investment.infrastructure.orm.investment_youtube_video_orm import InvestmentYoutubeVideoORM  # noqa: F401
+from app.domains.investment.infrastructure.orm.investment_youtube_video_comment_orm import InvestmentYoutubeVideoCommentORM  # noqa: F401
 from app.domains.board.infrastructure.orm.board_orm import BoardORM  # noqa: F401
 from app.domains.market_analysis.adapter.inbound.api.market_analysis_router import router as market_analysis_router
 from app.domains.market_video.adapter.inbound.api.market_video_router import router as market_video_router
