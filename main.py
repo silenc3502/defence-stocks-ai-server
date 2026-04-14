@@ -18,6 +18,8 @@ from app.domains.news.adapter.inbound.api.interest_article_router import router 
 from app.domains.news.adapter.inbound.api.news_search_router import router as news_search_router
 from app.domains.news.infrastructure.orm.interest_article_content_orm import InterestArticleContentORM  # noqa: F401
 from app.domains.news.infrastructure.orm.interest_article_orm import InterestArticleORM  # noqa: F401
+from app.domains.news.infrastructure.orm.investment_news_content_orm import InvestmentNewsContentORM  # noqa: F401
+from app.domains.news.infrastructure.orm.investment_news_orm import InvestmentNewsORM  # noqa: F401
 from app.domains.market_video.infrastructure.orm.market_video_orm import MarketVideoORM  # noqa: F401
 from app.domains.market_video.infrastructure.orm.video_comment_orm import VideoCommentORM  # noqa: F401
 from app.domains.post.adapter.inbound.api.post_router import router as post_router
