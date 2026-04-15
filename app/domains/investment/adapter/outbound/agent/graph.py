@@ -79,7 +79,10 @@ def run_investment_workflow(user_input: str) -> Dict[str, Any]:
         "parsed_query": None,
         "next_agent": None,
         "retrieval_data": None,
+        "youtube_signal": None,
+        "news_signal": None,
         "analysis_result": None,
+        "investment_decision": None,
         "final_output": None,
         "iteration": 0,
     }

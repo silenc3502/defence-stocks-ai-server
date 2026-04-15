@@ -29,11 +29,18 @@ class InvestmentState(TypedDict):
     # Orchestrator 가 결정한 다음 에이전트 (라우팅 키)
     next_agent: Optional[NextAgent]
 
-    # Retrieval Agent 수집 데이터
+    # Retrieval Agent 수집 데이터 (텍스트 요약)
     retrieval_data: Optional[str]
+
+    # Retrieval 단계에서 산출된 구조화된 신호 (Analyzer 가 소비)
+    youtube_signal: Optional[dict]    # YoutubeSentimentSignal.model_dump()
+    news_signal: Optional[dict]       # NewsEventSignal.model_dump()
 
     # Analysis Agent 분석 결과
     analysis_result: Optional[str]
+
+    # Deterministic 투자 판단 (InvestmentDecision.model_dump())
+    investment_decision: Optional[dict]
 
     # Synthesis Agent 최종 응답
     final_output: Optional[str]

@@ -4,7 +4,7 @@
 - keyword 가 None 이면 기본 방산 키워드로 fallback
 - 결과를 텍스트로 포맷하여 Retrieval Agent 의 retrieval_data 에 적재
 """
-from typing import Optional
+from typing import Any, Dict, Optional, Tuple
 
 from app.domains.investment.adapter.outbound.signal.news_signal_builder import (
     NewsSignalBuilder,
@@ -36,7 +36,7 @@ _MAX_RESULTS = 5
 _CONTENT_PREVIEW_LEN = 500
 
 
-def fetch_news(keyword: Optional[str] = None) -> str:
+def fetch_news(keyword: Optional[str] = None) -> Tuple[str, Optional[Dict[str, Any]]]:
     query = keyword or _FALLBACK_KEYWORD
     if keyword:
         print(f"  [뉴스] 사용자 키워드 사용: {query!r}")
@@ -64,7 +64,11 @@ def fetch_news(keyword: Optional[str] = None) -> str:
     # 뉴스 이벤트 신호 산출
     event_signal = _build_event_signal(result)
 
-    return _format_for_retrieval(result, query, event_signal)
+    text = _format_for_retrieval(result, query, event_signal)
+    # 신호 payload 를 함께 반환 (State 에 저장되어 Analyzer 가 소비)
+    has_events = bool(event_signal.positive_events or event_signal.negative_events)
+    signal_payload = event_signal.model_dump() if has_events else None
+    return text, signal_payload
 
 
 def _build_event_signal(result):

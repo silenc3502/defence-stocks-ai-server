@@ -10,7 +10,7 @@
 import logging
 import traceback
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from app.domains.investment.adapter.outbound.persistence.investment_youtube_log_repository_impl import (
     InvestmentYoutubeLogRepositoryImpl,
@@ -46,7 +46,7 @@ _MAX_COMMENTS_PER_VIDEO = 50
 _TOP_NOUNS = 30
 
 
-def fetch_youtube(keyword: Optional[str] = None) -> str:
+def fetch_youtube(keyword: Optional[str] = None) -> Tuple[str, Optional[Dict[str, Any]]]:
     query = keyword or _FALLBACK_QUERY
     if keyword:
         print(f"  [유튜브] 사용자 키워드 사용: {query!r}")
@@ -59,7 +59,7 @@ def fetch_youtube(keyword: Optional[str] = None) -> str:
     if not search_result.items:
         print(f"  [유튜브] 검색 결과 없음")
         _save_log_only(keyword, query, [])
-        return f"(유튜브 검색 결과 없음 — query={query})"
+        return f"(유튜브 검색 결과 없음 — query={query})", None
 
     videos = search_result.items
     print(f"  [유튜브] 영상 {len(videos)}건 수집")
@@ -124,7 +124,9 @@ def fetch_youtube(keyword: Optional[str] = None) -> str:
     # 투자 심리 신호 포맷 추가
     lines.append(_format_sentiment_signal(sentiment_signal))
 
-    return "\n".join(lines)
+    # 신호 payload 를 함께 반환 (State 에 저장되어 Analyzer 가 소비)
+    signal_payload = sentiment_signal.model_dump() if sentiment_signal.volume > 0 else None
+    return "\n".join(lines), signal_payload
 
 
 def _build_sentiment_signal(comments: List[str]):
