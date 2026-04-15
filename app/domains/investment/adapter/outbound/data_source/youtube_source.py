@@ -21,6 +21,15 @@ from app.domains.investment.adapter.outbound.persistence.investment_youtube_vide
 from app.domains.investment.adapter.outbound.persistence.investment_youtube_video_repository_impl import (
     InvestmentYoutubeVideoRepositoryImpl,
 )
+from app.domains.investment.adapter.outbound.signal.sentiment_analyzer import (
+    SentimentAnalyzer,
+)
+from app.domains.investment.adapter.outbound.signal.youtube_signal_builder import (
+    YoutubeSignalBuilder,
+)
+from app.domains.investment.application.usecase.analyze_youtube_sentiment_usecase import (
+    AnalyzeYoutubeSentimentUseCase,
+)
 from app.domains.market_video.adapter.outbound.external.market_video_client import (
     MarketVideoClient,
 )
@@ -88,6 +97,10 @@ def fetch_youtube(keyword: Optional[str] = None) -> str:
         top_nouns = []
         print(f"  [유튜브] 추출할 댓글 없음")
 
+    # 4단계: 투자 심리 신호 산출 (LLM 감성 분류)
+    print(f"  [유튜브] 4단계: 투자 심리 신호 산출")
+    sentiment_signal = _build_sentiment_signal(all_texts)
+
     # 저장
     _persist(keyword, query, videos, comments_by_youtube_id, top_nouns)
 
@@ -108,6 +121,79 @@ def fetch_youtube(keyword: Optional[str] = None) -> str:
         for noun, count in top_nouns:
             lines.append(f"- {noun}: {count}회")
 
+    # 투자 심리 신호 포맷 추가
+    lines.append(_format_sentiment_signal(sentiment_signal))
+
+    return "\n".join(lines)
+
+
+def _build_sentiment_signal(comments: List[str]):
+    """댓글 텍스트로부터 YoutubeSentimentSignal 산출. 실패 시 빈 신호 반환."""
+    try:
+        usecase = AnalyzeYoutubeSentimentUseCase(
+            signal_builder=YoutubeSignalBuilder(SentimentAnalyzer()),
+        )
+        signal = usecase.execute(comments=comments)
+    except Exception as exc:
+        print(f"  [유튜브] ❌ 투자 심리 신호 산출 실패 (continue): {exc}")
+        logger.error("YoutubeSentimentSignal 산출 실패: %s", exc, exc_info=True)
+        from app.domains.investment.application.response.youtube_sentiment_signal import (
+            SentimentDistribution,
+            YoutubeSentimentSignal,
+        )
+        signal = YoutubeSentimentSignal(
+            sentiment_distribution=SentimentDistribution(positive=0.0, neutral=0.0, negative=0.0),
+            sentiment_score=0.0,
+            bullish_keywords=[],
+            bearish_keywords=[],
+            topics=[],
+            volume=0,
+        )
+
+    _print_youtube_signal(signal)
+    return signal
+
+
+def _print_youtube_signal(signal) -> None:
+    """YoutubeSentimentSignal 전체 지표를 pretty-print 로 출력."""
+    dist = signal.sentiment_distribution
+    print()
+    print("  " + "┌" + "─" * 58 + "┐")
+    print(f"  │ [YoutubeSentimentSignal]                                 │")
+    print("  " + "├" + "─" * 58 + "┤")
+    print(f"  │ volume              : {signal.volume:<35d}│")
+    print(f"  │ sentiment_score     : {signal.sentiment_score:+.4f} ({'긍정 우세' if signal.sentiment_score > 0 else '부정 우세' if signal.sentiment_score < 0 else '중립'}){' ' * (35 - len(f'{signal.sentiment_score:+.4f} (중립)') - 2)}│")
+    print(f"  │ sentiment_distribution:                                  │")
+    print(f"  │   positive  : {dist.positive:.4f}  ({dist.positive:.1%}){' ' * 28}│")
+    print(f"  │   neutral   : {dist.neutral:.4f}  ({dist.neutral:.1%}){' ' * 28}│")
+    print(f"  │   negative  : {dist.negative:.4f}  ({dist.negative:.1%}){' ' * 28}│")
+    print("  " + "├" + "─" * 58 + "┤")
+    print(f"  │ bullish_keywords ({len(signal.bullish_keywords)}):")
+    for kw in signal.bullish_keywords:
+        print(f"  │   + {kw}")
+    print(f"  │ bearish_keywords ({len(signal.bearish_keywords)}):")
+    for kw in signal.bearish_keywords:
+        print(f"  │   - {kw}")
+    print(f"  │ topics ({len(signal.topics)}):")
+    for kw in signal.topics:
+        print(f"  │   • {kw}")
+    print("  " + "└" + "─" * 58 + "┘")
+    print()
+
+
+def _format_sentiment_signal(signal) -> str:
+    dist = signal.sentiment_distribution
+    lines = [
+        f"\n[투자 심리 신호 (volume={signal.volume})]",
+        f"- 감성 분포: 긍정 {dist.positive:.1%} / 중립 {dist.neutral:.1%} / 부정 {dist.negative:.1%}",
+        f"- 감성 점수: {signal.sentiment_score:+.3f} (-1 ~ +1)",
+    ]
+    if signal.bullish_keywords:
+        lines.append(f"- 긍정 키워드: {', '.join(signal.bullish_keywords[:10])}")
+    if signal.bearish_keywords:
+        lines.append(f"- 부정 키워드: {', '.join(signal.bearish_keywords[:10])}")
+    if signal.topics:
+        lines.append(f"- 전체 토픽: {', '.join(signal.topics[:10])}")
     return "\n".join(lines)
 
 

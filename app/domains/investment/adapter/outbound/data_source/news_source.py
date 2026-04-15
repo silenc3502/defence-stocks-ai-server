@@ -6,6 +6,12 @@
 """
 from typing import Optional
 
+from app.domains.investment.adapter.outbound.signal.news_signal_builder import (
+    NewsSignalBuilder,
+)
+from app.domains.investment.application.usecase.analyze_news_events_usecase import (
+    AnalyzeNewsEventsUseCase,
+)
 from app.domains.news.adapter.outbound.external.httpx_article_content_fetcher import (
     HttpxArticleContentFetcher,
 )
@@ -55,10 +61,57 @@ def fetch_news(keyword: Optional[str] = None) -> str:
         mysql_db.close()
         pg_db.close()
 
-    return _format_for_retrieval(result, query)
+    # 뉴스 이벤트 신호 산출
+    event_signal = _build_event_signal(result)
+
+    return _format_for_retrieval(result, query, event_signal)
 
 
-def _format_for_retrieval(result, query_used: str) -> str:
+def _build_event_signal(result):
+    """수집된 뉴스로부터 NewsEventSignal 산출. 실패 시 빈 신호."""
+    news_items = [
+        {
+            "title": item.title,
+            "content": item.content,
+            "source": item.source,
+            "link": item.link,
+        }
+        for item in result.items
+    ]
+    try:
+        usecase = AnalyzeNewsEventsUseCase(signal_builder=NewsSignalBuilder())
+        signal = usecase.execute(news_items)
+    except Exception as exc:
+        print(f"  [뉴스] ❌ 이벤트 신호 산출 실패 (continue): {exc}")
+        from app.domains.investment.application.response.news_event_signal import (
+            NewsEventSignal,
+        )
+        signal = NewsEventSignal(positive_events=[], negative_events=[], keywords=[])
+
+    _print_news_signal(signal)
+    return signal
+
+
+def _print_news_signal(signal) -> None:
+    """NewsEventSignal 전체 지표를 pretty-print 로 출력."""
+    print()
+    print("  " + "┌" + "─" * 58 + "┐")
+    print(f"  │ [NewsEventSignal]                                        │")
+    print("  " + "├" + "─" * 58 + "┤")
+    print(f"  │ positive_events ({len(signal.positive_events)}):")
+    for e in signal.positive_events:
+        print(f"  │   + [{e.impact:^6s}] {e.event}")
+    print(f"  │ negative_events ({len(signal.negative_events)}):")
+    for e in signal.negative_events:
+        print(f"  │   - [{e.impact:^6s}] {e.event}")
+    print(f"  │ keywords ({len(signal.keywords)}):")
+    for kw in signal.keywords:
+        print(f"  │   • {kw}")
+    print("  " + "└" + "─" * 58 + "┘")
+    print()
+
+
+def _format_for_retrieval(result, query_used: str, event_signal) -> str:
     """Retrieval Agent 가 분석하기 좋은 텍스트 형태로 포맷."""
     if not result.items:
         return (
@@ -83,4 +136,24 @@ def _format_for_retrieval(result, query_used: str) -> str:
         ]
         sections.append("\n".join(block))
 
+    # 이벤트 신호 포맷
+    sections.append(_format_event_signal(event_signal))
+
     return "\n".join(sections)
+
+
+def _format_event_signal(signal) -> str:
+    lines = ["\n[뉴스 이벤트 신호]"]
+    if signal.positive_events:
+        lines.append("- 긍정 이벤트:")
+        for e in signal.positive_events:
+            lines.append(f"  + [{e.impact}] {e.event}")
+    if signal.negative_events:
+        lines.append("- 부정 이벤트:")
+        for e in signal.negative_events:
+            lines.append(f"  - [{e.impact}] {e.event}")
+    if signal.keywords:
+        lines.append(f"- 핵심 키워드: {', '.join(signal.keywords[:15])}")
+    if not (signal.positive_events or signal.negative_events or signal.keywords):
+        lines.append("(추출된 이벤트 없음)")
+    return "\n".join(lines)
